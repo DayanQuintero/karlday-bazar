@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario - KARLDAY</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+        h2 { letter-spacing: 3px; font-weight: 300; text-transform: uppercase; margin: 0; }
+        .logout {
+            background: transparent;
+            color: #666;
+            border: 1px solid #333;
+            padding: 8px 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.8em;
+        }
+        .logout:hover { border-color: #d4a5a5; color: #d4a5a5; }
+        
+        .input-group { display: flex; gap: 0; margin-bottom: 40px; }
+        input {
+            flex: 1;
+            padding: 20px;
+            background: #111;
+            border: 1px solid #333;
+            color: white;
+            font-size: 16px;
+        }
+        input:focus { outline: none; border-color: #555; }
+        .add-btn {
+            background: #d4a5a5;
+            color: black;
+            border: none;
+            padding: 0 40px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .add-btn:hover { background: white; }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #111;
+            border-left: 3px solid #333;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+        .task-item:hover { transform: translateX(5px); border-left-color: #d4a5a5; }
+        .delete-btn {
+            background: transparent;
+            color: #666;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+        .delete-btn:hover { color: #ff4444; text-decoration: underline; }
+        
+        .status-badge {
+            font-size: 0.7em;
+            background: #222;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 10px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <span style="font-size: 0.8em; color: #d4a5a5; display:block; margin-bottom:5px;">PANEL ADMINISTRATIVO</span>
+                <h2>KARLDAY INVENTARIO</h2>
+            </div>
+            <button class="logout" id="logoutBtn">Cerrar Sesión</button>
+        </div>
+
+        <form id="taskForm" class="input-group">
+            <input type="text" id="taskTitle" placeholder="Ej: Vestido Zara Negro Talla M - Pendiente envío..." required>
+            <button type="submit" class="add-btn">AGREGAR</button>
+        </form>
+
+        <div id="tasksList">
+            <p style="text-align:center; color:gray; margin-top: 50px;">Cargando inventario...</p>
+        </div>
+    </div>
+    <script src="dashboard.js"></script>
+</body>
+</html>

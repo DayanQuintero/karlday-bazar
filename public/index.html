@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Administrativo - KARLDAY</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #0a0a0a; /* Fondo casi negro */
+            color: #ffffff;
+        }
+        .container {
+            background: #1a1a1a;
+            padding: 3rem;
+            border-radius: 0; /* Bordes cuadrados más elegantes */
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+            border: 1px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        h2 { letter-spacing: 2px; text-transform: uppercase; font-weight: 300; margin-bottom: 30px; }
+        input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: #000;
+            border: 1px solid #333;
+            color: white;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        input:focus { outline: none; border-color: #d4a5a5; /* Tono rosa palo */ }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #d4a5a5; /* Color acento tipo bazar */
+            color: #000;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        button:hover { background: #fff; }
+        .toggle { color: #888; cursor: pointer; margin-top: 20px; display: block; font-size: 0.8em; text-decoration: none; }
+        .toggle:hover { color: #d4a5a5; }
+        #message { margin-top: 15px; font-size: 0.9em; min-height: 20px; }
+        .brand { font-size: 2em; font-weight: bold; margin-bottom: 10px; display: block; letter-spacing: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <span class="brand">KARLDAY</span>
+        <p style="color: gray; font-size: 0.8em; margin-bottom: 30px;">GESTIÓN DE INVENTARIO</p>
+        
+        <h2 id="formTitle">Ingresar</h2>
+        <form id="authForm">
+            <input type="text" id="username" placeholder="Usuario Administrativo" required>
+            <input type="password" id="password" placeholder="Contraseña" required>
+            <button type="submit" id="btnAction">ENTRAR</button>
+        </form>
+        <span class="toggle" id="toggleLink">¿Nuevo administrador? Registrarse</span>
+        <p id="message"></p>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>
