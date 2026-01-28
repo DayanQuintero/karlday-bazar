@@ -24,10 +24,14 @@ authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
+    
+    // Defino la ruta dependiendo de si estoy entrando o registrándome
     const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
 
     try {
-        const res = await fetch(`http://localhost:3000${endpoint}`, {
+        // CORRECCIÓN CLAVE: Usar rutas relativas (sin http://localhost:3000)
+        // Esto permite que funcione automáticamente en Render (Nube) y en local.
+        const res = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
@@ -48,6 +52,7 @@ authForm.addEventListener('submit', async (e) => {
             message.textContent = data.error || 'Error desconocido';
         }
     } catch (error) {
+        console.error(error);
         message.textContent = 'Error de conexión con el servidor';
     }
 });

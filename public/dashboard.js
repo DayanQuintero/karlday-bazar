@@ -12,7 +12,9 @@ const taskForm = document.getElementById('taskForm');
 // Esta función asíncrona se encarga de pedirle al backend mi lista de inventario.
 async function loadTasks() {
     try {
-        const res = await fetch('http://localhost:3000/api/tasks', {
+        // CORRECCIÓN CLAVE: Uso ruta relativa '/api/tasks' (sin http://localhost...)
+        // Así el navegador busca automáticamente en el servidor correcto (Nube o Local).
+        const res = await fetch('/api/tasks', {
             headers: { 'auth-token': token } // Envío mi "pase VIP" (token) en los headers
         });
         const tasks = await res.json();
@@ -51,8 +53,8 @@ taskForm.addEventListener('submit', async (e) => {
     e.preventDefault(); // Evito que la página se recargue sola
     const title = document.getElementById('taskTitle').value;
     
-    // Hago la petición POST a mi API
-    await fetch('http://localhost:3000/api/tasks', {
+    // Hago la petición POST a mi API usando ruta relativa
+    await fetch('/api/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'auth-token': token },
         body: JSON.stringify({ title })
@@ -69,7 +71,8 @@ window.editTask = async (id, currentTitle) => {
     
     // Solo procedo si el usuario escribió algo y es diferente al original
     if (newTitle && newTitle !== currentTitle) {
-        await fetch(`http://localhost:3000/api/tasks/${id}`, {
+        // Uso ruta relativa con el ID
+        await fetch(`/api/tasks/${id}`, {
             method: 'PUT', // Uso el método PUT que configuré en mis rutas
             headers: { 'Content-Type': 'application/json', 'auth-token': token },
             body: JSON.stringify({ title: newTitle })
@@ -82,7 +85,8 @@ window.editTask = async (id, currentTitle) => {
 // Pido confirmación antes de borrar permanentemente de la base de datos.
 window.deleteTask = async (id) => {
     if(confirm('¿Estás seguro de eliminar este elemento del inventario?')) {
-        await fetch(`http://localhost:3000/api/tasks/${id}`, {
+        // Uso ruta relativa con el ID
+        await fetch(`/api/tasks/${id}`, {
             method: 'DELETE',
             headers: { 'auth-token': token }
         });
