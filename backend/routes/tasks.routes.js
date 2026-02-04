@@ -1,55 +1,93 @@
+// backend/routes/tasks.routes.js
 const express = require('express');
 const router = express.Router();
-const Task = require('../models/Task'); // Importo mi modelo de Tareas para poder interactuar con la base de datos
-
-/* NOTA: En mi server.js ya definí que este archivo maneja '/api/tasks'.
-  Por lo tanto, aquí solo uso '/' para referirme a la raíz de esa ruta.
-*/
+// Importamos nuestras herramientas de archivos en lugar de Mongoose
+const { readFile, writeFile, tasksPath } = require('../utils/fileHandler');
 
 // 1. LEER TODAS (GET /api/tasks)
-// Aquí le pido a MongoDB que busque y me devuelva todas las tareas que tengo guardadas.
-router.get('/', async (req, res) => {
+router.get('/', async (req, res, next) => {
     try {
-        const tasks = await Task.find();
+        const tasks = await readFile(tasksPath);
+        // Opcional: Si quieres que cada usuario vea SOLO sus tareas, descomenta esto:
+        // const userTasks = tasks.filter(task => task.userId === req.user.id);
+        // res.json(userTasks);
+        
+        // Por ahora devolvemos todas para cumplir el CRUD básico:
         res.json(tasks);
     } catch (error) {
-        res.status(500).json({ error: 'Tuve un error al intentar obtener las tareas' });
+        next(error); // Pasamos el error al middleware de server.js
     }
 });
 
 // 2. CREAR TAREA (POST /api/tasks)
-// Aquí recibo los datos nuevos, creo una instancia de mi modelo y la guardo en la base de datos.
-router.post('/', async (req, res) => {
+router.post('/', async (req, res, next) => {
     try {
-        const newTask = new Task(req.body);
-        await newTask.save(); // Guardo la tarea permanentemente
+        const { title, description } = req.body;
+        
+        // Validación básica
+        if (!title) {
+            return res.status(400).json({ error: 'El título es obligatorio' });
+        }
+
+        const tasks = await readFile(tasksPath);
+        
+        const newTask = {
+            id: Date.now().toString(), // Generamos un ID único basado en el tiempo
+            title,
+            description: description || '',
+            completed: false,
+            userId: req.user ? req.user.id : null // Vinculamos al usuario si existe el token
+        };
+
+        tasks.push(newTask);
+        await writeFile(tasksPath, tasks); // Guardamos en el archivo
+        
         res.status(201).json(newTask);
     } catch (error) {
-        res.status(400).json({ error: 'Tuve un error al intentar crear la tarea' });
+        next(error);
     }
 });
 
 // 3. ACTUALIZAR TAREA (PUT /api/tasks/:id)
-// Aquí busco una tarea específica por su ID y actualizo su título con la nueva información que recibo.
-router.put('/:id', async (req, res) => {
+router.put('/:id', async (req, res, next) => {
     try {
-        const { title } = req.body;
-        // Uso {new: true} para que la base de datos me devuelva el objeto ya editado, no el viejo.
-        const updatedTask = await Task.findByIdAndUpdate(req.params.id, { title }, { new: true });
-        res.json(updatedTask);
+        const { id } = req.params;
+        const updates = req.body;
+        
+        const tasks = await readFile(tasksPath);
+        const taskIndex = tasks.findIndex(t => t.id === id);
+
+        if (taskIndex === -1) {
+            return res.status(404).json({ error: 'Tarea no encontrada' });
+        }
+
+        // Actualizamos la tarea manteniendo los datos viejos que no cambian
+        tasks[taskIndex] = { ...tasks[taskIndex], ...updates };
+        
+        await writeFile(tasksPath, tasks);
+        res.json(tasks[taskIndex]);
     } catch (error) {
-        res.status(500).json({ error: 'Tuve un error al intentar actualizar la tarea' });
+        next(error);
     }
 });
 
 // 4. ELIMINAR TAREA (DELETE /api/tasks/:id)
-// Aquí localizo el documento por su ID y lo elimino de mi colección.
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req, res, next) => {
     try {
-        await Task.findByIdAndDelete(req.params.id);
-        res.json({ message: 'He eliminado la tarea correctamente' });
+        const { id } = req.params;
+        let tasks = await readFile(tasksPath);
+        
+        const initialLength = tasks.length;
+        tasks = tasks.filter(t => t.id !== id);
+
+        if (tasks.length === initialLength) {
+            return res.status(404).json({ error: 'Tarea no encontrada' });
+        }
+
+        await writeFile(tasksPath, tasks);
+        res.json({ message: 'Tarea eliminada correctamente' });
     } catch (error) {
-        res.status(500).json({ error: 'Tuve un error al intentar eliminar la tarea' });
+        next(error);
     }
 });
 

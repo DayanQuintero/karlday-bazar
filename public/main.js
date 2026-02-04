@@ -1,58 +1,69 @@
 // public/main.js
+
 const authForm = document.getElementById('authForm');
 const toggleLink = document.getElementById('toggleLink');
 const formTitle = document.getElementById('formTitle');
 const btnAction = document.getElementById('btnAction');
 const message = document.getElementById('message');
 
-let isLogin = true;
+let isLoginMode = true; // Variable para saber si estamos logueando o registrando
 
+// 1. Alternar entre Modo Login y Modo Registro
 toggleLink.addEventListener('click', () => {
-    isLogin = !isLogin;
-    if (isLogin) {
-        formTitle.textContent = 'Iniciar Sesión';
-        btnAction.textContent = 'Entrar';
-        toggleLink.textContent = '¿No tienes cuenta? Regístrate';
+    isLoginMode = !isLoginMode;
+    if (isLoginMode) {
+        formTitle.textContent = 'Ingresar';
+        btnAction.textContent = 'ENTRAR';
+        toggleLink.textContent = '¿Nuevo administrador? Registrarse';
     } else {
-        formTitle.textContent = 'Registro';
-        btnAction.textContent = 'Registrarse';
-        toggleLink.textContent = '¿Ya tienes cuenta? Entra aquí';
+        formTitle.textContent = 'Registrar';
+        btnAction.textContent = 'REGISTRARSE';
+        toggleLink.textContent = '¿Ya tienes cuenta? Ingresar';
     }
+    message.textContent = ''; // Limpiar mensajes
 });
 
+// 2. Manejar el envío del formulario
 authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    
-    // Defino la ruta dependiendo de si estoy entrando o registrándome
-    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+
+    const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
 
     try {
-        // CORRECCIÓN CLAVE: Usar rutas relativas (sin http://localhost:3000)
-        // Esto permite que funcione automáticamente en Render (Nube) y en local.
         const res = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
+
         const data = await res.json();
 
-        if (res.ok) {
-            if (isLogin) {
+        if (!res.ok) {
+            message.style.color = 'red';
+            message.textContent = data.error || data.message || 'Ocurrió un error';
+            return;
+        }
+
+        if (isLoginMode) {
+            // --- LOGIN EXITOSO ---
+            if (data.token) {
                 localStorage.setItem('auth-token', data.token);
-                window.location.href = 'dashboard.html';
-            } else {
-                message.style.color = '#4caf50';
-                message.textContent = '¡Registro exitoso! Ahora entra.';
-                toggleLink.click();
+                // Redirigimos a 'inicio.html' que es tu página principal
+                window.location.href = 'inicio.html';
             }
         } else {
-            message.style.color = '#ff4444';
-            message.textContent = data.error || 'Error desconocido';
+            // --- REGISTRO EXITOSO ---
+            message.style.color = 'lightgreen';
+            message.textContent = '¡Registro exitoso! Ahora puedes ingresar.';
+            // Volvemos al modo login automáticamente
+            toggleLink.click();
         }
+
     } catch (error) {
         console.error(error);
+        message.style.color = 'red';
         message.textContent = 'Error de conexión con el servidor';
     }
 });
