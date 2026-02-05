@@ -1,110 +1,74 @@
-const API_URL = 'http://localhost:3000/api/products';
-const token = localStorage.getItem('token');
-const productList = document.getElementById('task-list'); // Usaremos el mismo contenedor
-const productForm = document.getElementById('task-form'); // Usaremos el mismo form
+const taskForm = document.getElementById('task-form');
+const taskInput = document.getElementById('task-input');
+const taskList = document.getElementById('task-list');
+const logoutBtn = document.getElementById('logout-btn');
 
-// 1. Verificar si hay token (Protección del Frontend)
+const token = localStorage.getItem('token');
 if (!token) {
     window.location.href = 'index.html';
 }
 
-// 2. Cargar Productos desde MongoDB
-async function loadProducts() {
+fetchProducts();
+
+async function fetchProducts() {
     try {
-        const res = await fetch(API_URL, {
+        // --- CAMBIO CLAVE: Ruta relativa ---
+        const res = await fetch('/api/products', {
             headers: { 'Authorization': token }
         });
         const products = await res.json();
         
-        productList.innerHTML = ''; // Limpiar lista
-        products.forEach(renderProduct);
-        updateStats(products.length); // Actualizar contador
+        taskList.innerHTML = '';
+        if(Array.isArray(products)) {
+            products.forEach(addProductToDOM);
+        }
     } catch (error) {
-        console.error('Error cargando productos:', error);
-        alert('Tu sesión expiró, inicia sesión de nuevo');
-        localStorage.removeItem('token');
-        window.location.href = 'index.html';
+        console.error('Error cargando inventario:', error);
     }
 }
 
-// 3. Renderizar Producto en HTML
-function renderProduct(product) {
-    const li = document.createElement('li');
-    li.className = 'task-item'; // Mantenemos la clase para que se vea bonito con tu CSS actual
-    li.innerHTML = `
-        <div class="task-info">
-            <h3>${product.name}</h3>
-            <p>Categoría: ${product.category} | Precio: $${product.price}</p>
-        </div>
-        <div class="task-actions">
-            <button onclick="deleteProduct('${product._id}')" class="btn-delete">🗑️</button>
-        </div>
-    `;
-    productList.appendChild(li);
-}
-
-// 4. Crear Nuevo Producto
-if (productForm) {
-    productForm.addEventListener('submit', async (e) => {
+if (taskForm) {
+    taskForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const name = taskInput.value;
         
-        // OJO: Aquí estoy asumiendo que tu input se llama 'task-input'. 
-        // Para que sea una tienda real, deberíamos cambiar el HTML, 
-        // pero por ahora usaremos el input de texto para el nombre.
-        const nameInput = document.getElementById('task-input'); 
-        
-        const newProduct = {
-            name: nameInput.value,
-            price: 100, // Precio por defecto (luego podemos poner inputs reales)
-            category: 'Moda' // Categoría por defecto
-        };
-
         try {
-            const res = await fetch(API_URL, {
+            // --- CAMBIO CLAVE: Ruta relativa ---
+            const res = await fetch('/api/products', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
                     'Authorization': token
                 },
-                body: JSON.stringify(newProduct)
+                body: JSON.stringify({ name, price: 100, category: 'Moda' })
             });
 
             if (res.ok) {
-                nameInput.value = '';
-                loadProducts(); // Recargar lista
+                const newProduct = await res.json();
+                addProductToDOM(newProduct);
+                taskInput.value = '';
             }
         } catch (error) {
-            console.error(error);
+            console.error('Error agregando producto:', error);
         }
     });
 }
 
-// 5. Eliminar Producto
-window.deleteProduct = async (id) => {
-    if(!confirm('¿Borrar producto?')) return;
-
-    try {
-        await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': token }
-        });
-        loadProducts();
-    } catch (error) {
-        console.error(error);
-    }
-};
-
-function updateStats(count) {
-    // Si tienes elementos para mostrar estadísticas
-    const statsElement = document.getElementById('total-tasks'); 
-    if(statsElement) statsElement.innerText = count + ' Productos';
+function addProductToDOM(product) {
+    const li = document.createElement('li');
+    li.className = 'task-item';
+    li.innerHTML = `
+        <div class="task-info">
+            <h3>${product.name}</h3>
+            <p>Categoría: ${product.category || 'General'} | Precio: $${product.price || 0}</p>
+        </div>
+    `;
+    taskList.appendChild(li);
 }
 
-// Iniciar
-document.addEventListener('DOMContentLoaded', loadProducts);
-
-// Botón Logout
-document.getElementById('logout-btn')?.addEventListener('click', () => {
-    localStorage.removeItem('token');
-    window.location.href = 'index.html';
-});
+if(logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        window.location.href = 'index.html';
+    });
+}
