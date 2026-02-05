@@ -1,108 +1,110 @@
-// public/dashboard.js
+const API_URL = 'http://localhost:3000/api/products';
+const token = localStorage.getItem('token');
+const productList = document.getElementById('task-list'); // Usaremos el mismo contenedor
+const productForm = document.getElementById('task-form'); // Usaremos el mismo form
 
-// 1. Verificación de Seguridad
-const token = localStorage.getItem('auth-token');
-if (!token) window.location.href = 'index.html';
+// 1. Verificar si hay token (Protección del Frontend)
+if (!token) {
+    window.location.href = 'index.html';
+}
 
-const tasksList = document.getElementById('tasksList');
-const taskForm = document.getElementById('taskForm');
-
-// Configuración de cabeceras estándar para JWT
-const getAuthHeaders = () => {
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}` // ¡CORRECCIÓN IMPORTANTE! Backend espera "Bearer token"
-    };
-};
-
-// 2. Función de Lectura (READ)
-async function loadTasks() {
+// 2. Cargar Productos desde MongoDB
+async function loadProducts() {
     try {
-        const res = await fetch('/api/tasks', {
-            method: 'GET',
-            headers: getAuthHeaders() // Usamos la cabecera corregida
+        const res = await fetch(API_URL, {
+            headers: { 'Authorization': token }
         });
-
-        if (res.status === 401 || res.status === 403) {
-            alert("Tu sesión ha expirado.");
-            localStorage.removeItem('auth-token');
-            window.location.href = 'index.html';
-            return;
-        }
-
-        const tasks = await res.json();
+        const products = await res.json();
         
-        tasksList.innerHTML = ''; 
-
-        if(tasks.length === 0) {
-            tasksList.innerHTML = '<p style="text-align:center; color:#888; margin-top:50px;">El inventario está vacío actualmente.</p>';
-            return;
-        }
-
-        tasks.forEach(task => {
-            const div = document.createElement('div');
-            div.className = 'task-item';
-            
-            // CORRECCIÓN DE ID: Cambiamos task._id por task.id
-            div.innerHTML = `
-                <span>${task.title}</span>
-                <div style="display:flex; gap:10px;">
-                    <button onclick="editTask('${task.id}', '${task.title}')" style="cursor:pointer; background:none; border:1px solid #888; color:#ccc; padding:5px 10px; border-radius:4px;">EDITAR</button>
-                    <button class="delete-btn" onclick="deleteTask('${task.id}')">ELIMINAR</button>
-                </div>
-            `;
-            tasksList.appendChild(div);
-        });
+        productList.innerHTML = ''; // Limpiar lista
+        products.forEach(renderProduct);
+        updateStats(products.length); // Actualizar contador
     } catch (error) {
-        console.error('Error cargando tareas:', error);
+        console.error('Error cargando productos:', error);
+        alert('Tu sesión expiró, inicia sesión de nuevo');
+        localStorage.removeItem('token');
+        window.location.href = 'index.html';
     }
 }
 
-// 3. Función de Creación (CREATE)
-taskForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const title = document.getElementById('taskTitle').value;
-    
-    await fetch('/api/tasks', {
-        method: 'POST',
-        headers: getAuthHeaders(), // Cabecera corregida
-        body: JSON.stringify({ title, description: "Inventario" }) // Agrego description por si el backend lo pide
+// 3. Renderizar Producto en HTML
+function renderProduct(product) {
+    const li = document.createElement('li');
+    li.className = 'task-item'; // Mantenemos la clase para que se vea bonito con tu CSS actual
+    li.innerHTML = `
+        <div class="task-info">
+            <h3>${product.name}</h3>
+            <p>Categoría: ${product.category} | Precio: $${product.price}</p>
+        </div>
+        <div class="task-actions">
+            <button onclick="deleteProduct('${product._id}')" class="btn-delete">🗑️</button>
+        </div>
+    `;
+    productList.appendChild(li);
+}
+
+// 4. Crear Nuevo Producto
+if (productForm) {
+    productForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // OJO: Aquí estoy asumiendo que tu input se llama 'task-input'. 
+        // Para que sea una tienda real, deberíamos cambiar el HTML, 
+        // pero por ahora usaremos el input de texto para el nombre.
+        const nameInput = document.getElementById('task-input'); 
+        
+        const newProduct = {
+            name: nameInput.value,
+            price: 100, // Precio por defecto (luego podemos poner inputs reales)
+            category: 'Moda' // Categoría por defecto
+        };
+
+        try {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+                body: JSON.stringify(newProduct)
+            });
+
+            if (res.ok) {
+                nameInput.value = '';
+                loadProducts(); // Recargar lista
+            }
+        } catch (error) {
+            console.error(error);
+        }
     });
-    
-    document.getElementById('taskTitle').value = '';
-    loadTasks();
-});
+}
 
-// 4. Función de Edición (UPDATE)
-window.editTask = async (id, currentTitle) => {
-    const newTitle = prompt("Editar nombre de la prenda:", currentTitle);
-    
-    if (newTitle && newTitle !== currentTitle) {
-        await fetch(`/api/tasks/${id}`, { // ID sin guion bajo
-            method: 'PUT',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ title: newTitle })
-        });
-        loadTasks();
-    }
-};
+// 5. Eliminar Producto
+window.deleteProduct = async (id) => {
+    if(!confirm('¿Borrar producto?')) return;
 
-// 5. Función de Eliminación (DELETE)
-window.deleteTask = async (id) => {
-    if(confirm('¿Estás seguro de eliminar este elemento del inventario?')) {
-        await fetch(`/api/tasks/${id}`, { // ID sin guion bajo
+    try {
+        await fetch(`${API_URL}/${id}`, {
             method: 'DELETE',
-            headers: getAuthHeaders()
+            headers: { 'Authorization': token }
         });
-        loadTasks();
+        loadProducts();
+    } catch (error) {
+        console.error(error);
     }
 };
 
-// 6. Cerrar Sesión
-document.getElementById('logoutBtn').addEventListener('click', () => {
-    localStorage.removeItem('auth-token');
-    window.location.href = 'index.html';
-});
+function updateStats(count) {
+    // Si tienes elementos para mostrar estadísticas
+    const statsElement = document.getElementById('total-tasks'); 
+    if(statsElement) statsElement.innerText = count + ' Productos';
+}
 
 // Iniciar
-loadTasks();
+document.addEventListener('DOMContentLoaded', loadProducts);
+
+// Botón Logout
+document.getElementById('logout-btn')?.addEventListener('click', () => {
+    localStorage.removeItem('token');
+    window.location.href = 'index.html';
+});

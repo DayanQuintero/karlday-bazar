@@ -49,7 +49,7 @@ function renderizarTareas(tareas) {
     
     // Contadores
     const total = tareas.length;
-    // (Opcional: Si el backend tuviera 'completed', aquí filtraríamos)
+    // (Opcional: Si el backend tuviera 'completed', aquí filtraría)
     contadorTareas.textContent = `Total tareas: ${total}`; 
 
     tareas.forEach(tarea => {
@@ -72,7 +72,7 @@ function renderizarTareas(tareas) {
 // 4. Agregar Tarea (CREATE)
 btnAgregar.addEventListener('click', async () => {
     const titulo = inputTarea.value;
-    const prioridad = selectPrioridad.value; // Guardaremos la prioridad como descripción
+    const prioridad = selectPrioridad.value; // Guardare la prioridad como descripción
 
     if (!titulo) return;
 
@@ -94,7 +94,7 @@ btnAgregar.addEventListener('click', async () => {
 });
 
 // 5. Eliminar Tarea (DELETE)
-// Hacemos esta función global (window) para que el HTML pueda llamarla onclick
+// Hago esta función global (window) para que el HTML pueda llamarla onclick
 window.eliminarTarea = async (id) => {
     if (confirm('¿Borrar tarea?')) {
         try {
@@ -109,8 +109,8 @@ window.eliminarTarea = async (id) => {
     }
 };
 
-// 6. Botón Cerrar Sesión (Agregado dinámicamente o puedes ponerlo en el HTML)
-// Como tu inicio.html no tiene botón de logout explícito, podrías agregar uno,
+// 6. Botón Cerrar Sesión (Agregado dinámicamente o puedo ponerlo en el HTML)
+// Como mi inicio.html no tiene botón de logout explícito, podría agregar uno,
 // o ejecutar localStorage.removeItem('auth-token') en la consola.
 
 // INCIAR

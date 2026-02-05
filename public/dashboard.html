@@ -23,7 +23,13 @@
             padding-bottom: 20px;
             margin-bottom: 40px;
         }
-        h2 { letter-spacing: 3px; font-weight: 300; text-transform: uppercase; margin: 0; }
+        h1 { 
+            letter-spacing: 3px; 
+            font-weight: 300; 
+            text-transform: uppercase; 
+            margin: 0; 
+            font-size: 1.5em; 
+        }
         .logout {
             background: transparent;
             color: #666;
@@ -72,19 +78,13 @@
             color: #666;
             border: none;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 1.2em; 
             text-transform: uppercase;
         }
-        .delete-btn:hover { color: #ff4444; text-decoration: underline; }
+        .delete-btn:hover { color: #ff4444; }
         
-        .status-badge {
-            font-size: 0.7em;
-            background: #222;
-            padding: 3px 8px;
-            border-radius: 4px;
-            margin-right: 10px;
-            color: #888;
-        }
+        .task-info h3 { margin: 0 0 5px 0; font-size: 1.1em; color: #fff; }
+        .task-info p { margin: 0; font-size: 0.9em; color: #888; }
     </style>
 </head>
 <body>
@@ -92,20 +92,21 @@
         <div class="header">
             <div>
                 <span style="font-size: 0.8em; color: #d4a5a5; display:block; margin-bottom:5px;">PANEL ADMINISTRATIVO</span>
-                <h2>KARLDAY INVENTARIO</h2>
+                <h1>Inventario KARLDAY</h1>
             </div>
-            <button class="logout" id="logoutBtn">Cerrar Sesión</button>
+            <button class="logout" id="logout-btn">Cerrar Sesión</button>
         </div>
 
-        <form id="taskForm" class="input-group">
-            <input type="text" id="taskTitle" placeholder="Ej: Vestido Zara Negro Talla M - Pendiente envío..." required>
-            <button type="submit" class="add-btn">AGREGAR</button>
+        <form id="task-form" class="input-group">
+            <input type="text" id="task-input" placeholder="Nombre de la prenda..." required>
+            <button type="submit" class="add-btn">Agregar Prenda</button>
         </form>
 
-        <div id="tasksList">
+        <ul id="task-list" style="list-style: none; padding: 0;">
             <p style="text-align:center; color:gray; margin-top: 50px;">Cargando inventario...</p>
-        </div>
+        </ul>
     </div>
+    
     <script src="dashboard.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - KARLDAY</title>
+    <title>Registro - KARLDAY</title>
     <style>
         body {
             font-family: 'Helvetica Neue', sans-serif;
@@ -23,8 +23,7 @@
             max-width: 400px;
             text-align: center;
         }
-        h1 { margin: 0; font-size: 2em; letter-spacing: 2px; }
-        h3 { font-weight: 300; color: #666; margin-bottom: 30px; font-size: 0.9em; text-transform: uppercase; }
+        h2 { letter-spacing: 3px; font-weight: 300; text-transform: uppercase; margin-bottom: 30px; }
         input {
             width: 100%;
             padding: 15px;
@@ -52,20 +51,17 @@
 </head>
 <body>
     <div class="login-container">
-        <h1>KARLDAY</h1>
-        <h3>Gestión de Inventario</h3>
-        
+        <h2>Crear Cuenta</h2>
         <div id="error-message" class="error"></div>
-
-        <form id="login-form">
-            <input type="text" id="username" placeholder="Usuario Administrativo" required>
-            <input type="password" id="password" placeholder="Contraseña" required>
-            <button type="submit">ENTRAR</button>
+        
+        <form id="register-form">
+            <input type="text" id="username" placeholder="Elige un usuario" required>
+            <input type="password" id="password" placeholder="Elige una contraseña" required>
+            <button type="submit">Registrarme</button>
         </form>
-
-        <a href="register.html" class="link">¿Nuevo administrador? Registrarse</a>
+        
+        <a href="index.html" class="link">¿Ya tienes cuenta? Iniciar Sesión</a>
     </div>
-    
     <script src="main.js"></script>
 </body>
 </html>
