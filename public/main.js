@@ -46,3 +46,9 @@ function showError(msg) {
     errorMessage.textContent = msg;
     errorMessage.style.display = 'block';
 }
+
+
+
+
+// Actualizacion forzada para Vercel
+console.log("Versión corregida cargada");
