@@ -1,50 +1,36 @@
 const express = require('express');
-const cors = require('cors');
 const mongoose = require('mongoose');
-const path = require('path');
-
-// --- CONFIGURACIÓN DE ENTORNO ---
-// Le decimos explícitamente que busque el .env en la carpeta actual (__dirname)
-// Esto es vital para que funcione en tu compu
-require('dotenv').config({ path: path.join(__dirname, '.env') });
-
-// Importar Rutas
-const authRoutes = require('./routes/auth.routes');
-const productRoutes = require('./routes/products.routes'); 
+const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // --- MIDDLEWARES ---
-app.use(cors());
-app.use(express.json());
+app.use(cors()); // Permite conectar el Frontend con el Backend
+app.use(express.json()); // Permite recibir datos en formato JSON
 
-// Servir archivos estáticos (Frontend)
-// Esto permite que al entrar a localhost:3000 veas tu página web
-app.use(express.static(path.join(__dirname, '../public')));
-
-// --- CONEXIÓN A MONGODB ---
+// --- CONEXIÓN A BASE DE DATOS (MONGODB ATLAS) ---
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('✅ Conectado a MongoDB Atlas'))
-    .catch(err => console.error('❌ Error conectando a MongoDB:', err));
+    .then(() => console.log('✅ Conectado exitosamente a MongoDB Atlas'))
+    .catch((error) => console.error('❌ Error al conectar a MongoDB:', error));
 
-// --- RUTAS API ---
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
+// --- RUTAS DE LA API ---
+app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/products', require('./routes/products.routes'));
 
-// Manejo de errores global
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ message: 'Error interno del servidor', error: err.message });
+// --- LA NUEVA RUTA DE LA API EXTERNA (MONEDAS) ---
+app.use('/api/currency', require('./routes/currency.routes'));
+
+// --- RUTA BASE DE PRUEBA ---
+app.get('/', (req, res) => {
+    res.send('El servidor de KarlDay está funcionando al 100% 🚀');
 });
 
-// --- ARRANQUE DEL SERVIDOR ---
-// Esta condición es MÁGICA:
-// 1. Si corres "node server.js", entra aquí e inicia el servidor.
-// 2. Si Vercel o Jest importan este archivo, NO entra aquí (evita errores de puerto ocupado).
-if (require.main === module) {
-    app.listen(PORT, () => console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`));
-}
+// --- INICIO DEL SERVIDOR ---
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
+});
 
-// Exportamos la app para que Vercel (y los tests) puedan usarla
+// Exportamos la app para que Vercel la pueda leer correctamente
 module.exports = app;
