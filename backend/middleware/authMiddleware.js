@@ -1,33 +1,41 @@
-// backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 
-// Asegúrate de que esta clave sea LA MISMA que usas en auth.routes.js
-const SECRET_KEY = process.env.JWT_SECRET || 'mi_secreto_super_seguro';
-
+// GUARDIA 1: Verifica que el usuario tenga un Token válido
 const verifyToken = (req, res, next) => {
-    // 1. Buscamos el token en la cabecera
-    const authHeader = req.headers['authorization'];
+    // Busco el token en el encabezado 'Authorization'
+    const token = req.header('Authorization');
 
-    if (!authHeader) {
-        return res.status(403).json({ message: 'Acceso denegado: Token requerido' });
+    // Si no trae token, le niego el acceso inmediatamente
+    if (!token) {
+        return res.status(401).json({ message: 'Acceso denegado. No hay token.' });
     }
 
     try {
-        // 2. Limpiamos el token (quitamos la palabra "Bearer " si existe)
-        // Esto separa "Bearer <token>" y se queda solo con el token real
-        const token = authHeader.startsWith('Bearer ') 
-            ? authHeader.split(' ')[1] 
-            : authHeader;
-
-        // 3. Verificamos la firma
-        const decoded = jwt.verify(token, SECRET_KEY);
+        // Intento decodificar el token usando mi clave secreta
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        // 4. Guardamos los datos del usuario en la petición para usarlos luego
-        req.user = decoded;
-        next(); // ¡Pasa, amigo!
+        // Si funciona, guardo los datos del usuario (id y role) en la petición
+        req.user = decoded.user;
+        
+        // Dejo pasar a la siguiente función
+        next();
     } catch (error) {
-        return res.status(401).json({ message: 'Token inválido o expirado' });
+        res.status(401).json({ message: 'Token no válido' });
     }
 };
 
-module.exports = verifyToken;
+// GUARDIA 2: Verifica que el usuario sea ADMINISTRADOR
+// Este guardia solo funciona si ya pasó el primero (verifyToken)
+const verifyAdmin = (req, res, next) => {
+    // Reviso si el rol guardado en el token es exactamente 'admin'
+    if (req.user && req.user.role === 'admin') {
+        // Si es admin, lo dejo pasar
+        next();
+    } else {
+        // Si no es admin, le prohíbo el paso aunque tenga token
+        res.status(403).json({ message: 'Acceso denegado. Se requieren permisos de Administrador.' });
+    }
+};
+
+// Exporto ambos guardias para usarlos en mis rutas
+module.exports = { verifyToken, verifyAdmin };
