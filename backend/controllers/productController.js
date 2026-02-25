@@ -1,74 +1,65 @@
-const Product = require('../models/Product'); 
+const Product = require("../models/Product");
 
-// 1. OBTENER PRODUCTOS (CON FILTROS Y PAGINACIÓN)
-exports.getProducts = async (req, res) => {
-    try {
-        // Extraigo los parámetros que el frontend me mande por la URL. 
-        // Si no me mandan nada, por defecto asumo que quieren la página 1 y máximo 10 productos.
-        const { page = 1, limit = 10, category } = req.query;
+/**
+ * GET con paginación + filtros:
+ * /api/products?page=1&limit=8&category=calzado&search=adidas
+ */
+async function getProducts(req, res) {
+  const page = Math.max(parseInt(req.query.page || "1", 10), 1);
+  const limit = Math.min(Math.max(parseInt(req.query.limit || "8", 10), 1), 50);
 
-        // Construyo mi filtro de búsqueda vacío al inicio
-        let query = {};
-        
-        // Si el usuario seleccionó una categoría (ej. "Moda"), la agrego al filtro
-        if (category) {
-            query.category = category; 
-        }
+  const category = (req.query.category || "").trim();
+  const search = (req.query.search || "").trim();
 
-        // Calculo cuántos productos debo saltarme. 
-        // Ejemplo: Si estoy en la página 2 y el límite es 10, me salto los primeros 10.
-        const skip = (page - 1) * limit;
+  const filter = {};
+  if (category) filter.category = category;
 
-        // Voy a la base de datos, aplico el filtro, me salto los necesarios y limito la cantidad
-        const products = await Product.find(query)
-                                      .skip(skip)
-                                      .limit(parseInt(limit));
+  if (search) {
+    filter.$or = [
+      { title: { $regex: search, $options: "i" } },
+      { brand: { $regex: search, $options: "i" } },
+      { description: { $regex: search, $options: "i" } }
+    ];
+  }
 
-        // Cuento el total de productos que coinciden con el filtro para saber cuántas páginas existen
-        const total = await Product.countDocuments(query);
+  const total = await Product.countDocuments(filter);
+  const totalPages = Math.max(Math.ceil(total / limit), 1);
 
-        // Devuelvo la respuesta al frontend en formato JSON, incluyendo toda la metadata de paginación
-        res.json({
-            totalItems: total,
-            totalPages: Math.ceil(total / limit),
-            currentPage: parseInt(page),
-            products // Aquí va el arreglo con las prendas
-        });
+  const items = await Product.find(filter)
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit);
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error obteniendo los productos' });
-    }
-};
+  res.json({ page, limit, total, totalPages, items });
+}
 
-// 2. CREAR PRODUCTO (Protegido por middlewares en las rutas)
-exports.createProduct = async (req, res) => {
-    try {
-        const { name, price, category } = req.body;
-        const newProduct = new Product({ name, price, category });
-        await newProduct.save();
-        res.status(201).json(newProduct);
-    } catch (error) {
-        res.status(500).json({ message: 'Error al crear el producto' });
-    }
-};
+async function getProductById(req, res) {
+  const p = await Product.findById(req.params.id);
+  if (!p) return res.status(404).json({ message: "Producto no encontrado" });
+  res.json(p);
+}
 
-// 3. ACTUALIZAR PRODUCTO
-exports.updateProduct = async (req, res) => {
-    try {
-        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.json(updatedProduct);
-    } catch (error) {
-        res.status(500).json({ message: 'Error al actualizar' });
-    }
-};
+async function createProduct(req, res) {
+  const p = await Product.create(req.body);
+  res.status(201).json({ message: "Producto creado", product: p });
+}
 
-// 4. ELIMINAR PRODUCTO
-exports.deleteProduct = async (req, res) => {
-    try {
-        await Product.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Producto eliminado' });
-    } catch (error) {
-        res.status(500).json({ message: 'Error al eliminar' });
-    }
-};
+async function updateProduct(req, res) {
+  const p = await Product.findById(req.params.id);
+  if (!p) return res.status(404).json({ message: "Producto no encontrado" });
+
+  Object.assign(p, req.body);
+  await p.save();
+
+  res.json({ message: "Producto actualizado", product: p });
+}
+
+async function deleteProduct(req, res) {
+  const p = await Product.findById(req.params.id);
+  if (!p) return res.status(404).json({ message: "Producto no encontrado" });
+
+  await p.deleteOne();
+  res.json({ message: "Producto eliminado" });
+}
+
+module.exports = { getProducts, getProductById, createProduct, updateProduct, deleteProduct };

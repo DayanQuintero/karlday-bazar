@@ -1,23 +1,20 @@
-const express = require('express');
+// backend/routes/products.routes.js
+const express = require("express");
 const router = express.Router();
-const productController = require('../controllers/productController');
-// Importo a mis dos guardias de seguridad
-const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
 
-// RUTA PÚBLICA: Cualquiera puede VER el catálogo
-// (No agrego middleware aquí para que sea como una tienda real)
-router.get('/', productController.getProducts);
+const authMiddleware = require("../middleware/authMiddleware");
+const requireRole = require("../middleware/roleMiddleware");
+const validateProduct = require("../middleware/validateProduct");
 
-// RUTAS PROTEGIDAS: Solo el ADMIN puede crear, editar o borrar
-// Primero pasa verifyToken (¿quién eres?) y luego verifyAdmin (¿eres jefe?)
+const productController = require("../controllers/productController");
 
-// Crear producto
-router.post('/', verifyToken, verifyAdmin, productController.createProduct);
+// GET público (catálogo)
+router.get("/", productController.getProducts);
+router.get("/:id", productController.getProductById);
 
-// Editar producto (necesitas el ID)
-router.put('/:id', verifyToken, verifyAdmin, productController.updateProduct);
-
-// Eliminar producto (necesitas el ID)
-router.delete('/:id', verifyToken, verifyAdmin, productController.deleteProduct);
+// CRUD protegido (solo trabajador)
+router.post("/", authMiddleware, requireRole("trabajador"), validateProduct, productController.createProduct);
+router.put("/:id", authMiddleware, requireRole("trabajador"), validateProduct, productController.updateProduct);
+router.delete("/:id", authMiddleware, requireRole("trabajador"), productController.deleteProduct);
 
 module.exports = router;

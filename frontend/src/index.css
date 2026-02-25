@@ -1,0 +1,75 @@
+/* Importo mis fuentes de Google Fonts para ese toque moderno e industrial (Oswald para títulos, Inter para texto) */
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Inter:wght@300;500;700&display=swap');
+
+/* Reseteo los márgenes para tener control total de mi lienzo web */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Defino el fondo completamente blanco y la letra negra, muy al estilo minimalista y limpio */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #ffffff;
+  color: #000000;
+  /* Evito que la página se desborde hacia los lados */
+  overflow-x: hidden; 
+}
+
+/* Mis títulos usarán esta fuente impactante, gruesa y siempre en mayúsculas */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Creo mi botón personalizado "btn-karl" con efecto inverso al pasar el mouse */
+.btn-karl {
+  background-color: #000;
+  color: #fff;
+  padding: 15px 30px;
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  border: 2px solid #000;
+  cursor: pointer;
+  /* Hago que la transición de color sea suave */
+  transition: all 0.3s ease; 
+  font-weight: bold;
+  letter-spacing: 2px;
+  font-size: 1.1rem;
+}
+
+/* Cuando paso el mouse sobre mi botón, se vuelve blanco con letras negras */
+.btn-karl:hover {
+  background-color: #fff;
+  color: #000;
+}
+
+/* --- NUEVOS ESTILOS PARA EL CARRITO Y COMENTARIOS --- */
+
+/* Creo mi pestaña lateral fija que siempre persigue al usuario */
+.feedback-tab {
+  position: fixed;
+  top: 50%;
+  right: -55px; /* La escondo un poco en el borde derecho */
+  transform: translateY(-50%) rotate(-90deg); /* La roto para que el texto vaya de abajo hacia arriba */
+  background-color: #e5e5e5;
+  color: #555;
+  padding: 12px 20px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.9rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  border: 1px solid #ddd;
+  border-bottom: none; /* Le quito el borde de abajo para que parezca una pestaña adherida */
+  cursor: pointer;
+  z-index: 1000; /* Me aseguro de que flote por encima de todo */
+  transition: background-color 0.3s ease;
+}
+
+/* Le doy un efecto cuando el cliente pase el mouse */
+.feedback-tab:hover {
+  background-color: #000;
+  color: #fff;
+}
